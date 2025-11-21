@@ -16,12 +16,18 @@ export default function BarcodeScanner({ onDetect, onClose }) {
   useEffect(() => {
     const startScanning = async () => {
       try {
+        console.log('🔍 Starting barcode scanner...')
+        
         // Initialize ZXing barcode reader
         const codeReader = new BrowserMultiFormatReader()
         codeReaderRef.current = codeReader
         
+        console.log('📹 Requesting camera access...')
+        
         // Get video devices
         const videoInputDevices = await BrowserMultiFormatReader.listVideoInputDevices()
+        
+        console.log('📷 Found cameras:', videoInputDevices.length)
         
         if (videoInputDevices.length === 0) {
           setError('No camera found. Please connect a camera or use manual search.')
@@ -36,6 +42,8 @@ export default function BarcodeScanner({ onDetect, onClose }) {
           device.label.toLowerCase().includes('environment')
         ) || videoInputDevices[0]
 
+        console.log('✅ Using camera:', selectedDevice.label)
+
         // Start continuous decode from video device
         const controls = await codeReader.decodeFromVideoDevice(
           selectedDevice.deviceId,
@@ -43,6 +51,7 @@ export default function BarcodeScanner({ onDetect, onClose }) {
           (result, err) => {
             if (result && !hasDetectedRef.current) {
               const barcode = result.getText()
+              console.log('🎯 BARCODE DETECTED:', barcode)
               hasDetectedRef.current = true
               setDetectedCode(barcode)
               setScanning(false)
@@ -63,12 +72,14 @@ export default function BarcodeScanner({ onDetect, onClose }) {
           }
         )
         
+        console.log('🎥 Scanner started, waiting for barcode...')
+        
         // Store controls for cleanup
         codeReaderRef.current = controls
         
       } catch (err) {
-        console.error('Scanner initialization error:', err)
-        setError(err.message || 'Camera access denied. Use USB scanner or manual search.')
+        console.error('❌ Scanner initialization error:', err)
+        setError(err.message || 'Camera access denied. Check permissions and try again.')
         setScanning(false)
       }
     }
@@ -78,6 +89,7 @@ export default function BarcodeScanner({ onDetect, onClose }) {
     }
 
     return () => {
+      console.log('🛑 Cleaning up scanner...')
       if (codeReaderRef.current && codeReaderRef.current.stop) {
         codeReaderRef.current.stop()
       }
