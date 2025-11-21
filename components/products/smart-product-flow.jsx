@@ -213,7 +213,7 @@ export default function SmartProductFlow({ products, onProductAdded, onCancel })
       {/* Barcode Scanner Modal */}
       {showScanner && (
         <BarcodeScanner
-          onDetect={(scannedBarcode) => {
+          onBarcodeDetected={(scannedBarcode) => {
             setBarcode(scannedBarcode)
             setShowScanner(false)
             // Auto-submit after scan
