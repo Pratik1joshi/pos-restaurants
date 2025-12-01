@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climate Research Framework</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        
+        .controls {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 12px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            background: white;
+            color: #667eea;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.25);
+            background: #f8f9fa;
+        }
+        
+        .canvas-container {
+            background: white;
+            padding: 60px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 100%;
+            overflow: auto;
+        }
+
+        .info {
+            margin-top: 25px;
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        svg {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="downloadSVG()">📥 Download SVG</button>
+        <button onclick="downloadPNG()">🖼️ Download PNG</button>
+    </div>
+    
+    <div class="canvas-container">
+        <svg id="researchChart" width="2400" height="1600" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+                    <feOffset dx="0" dy="6" result="offsetblur"/>
+                    <feComponentTransfer>
+                        <feFuncA type="linear" slope="0.15"/>
+                    </feComponentTransfer>
+                    <feMerge>
+                        <feMergeNode/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+
+                <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#667eea"/>
+                    <stop offset="100%" style="stop-color:#764ba2"/>
+                </linearGradient>
+                
+                <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#11998e"/>
+                    <stop offset="100%" style="stop-color:#38ef7d"/>
+                </linearGradient>
+                
+                <linearGradient id="pinkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#f093fb"/>
+                    <stop offset="100%" style="stop-color:#f5576c"/>
+                </linearGradient>
+                
+                <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#4facfe"/>
+                    <stop offset="100%" style="stop-color:#00f2fe"/>
+                </linearGradient>
+            </defs>
+
+            <!-- Background decoration removed for clarity -->
+
+            <!-- Title -->
+            <text x="1200" y="100" font-size="48" font-weight="700" fill="#1a202c" text-anchor="middle">
+                Climate Indices & Citizen Science Framework
+            </text>
+            <text x="1200" y="160" font-size="24" fill="#718096" text-anchor="middle">
+                Shimashiwar Study Area
+            </text>
+
+            <!-- ============== CENTER CIRCLE ============== -->
+            <g filter="url(#shadow)">
+                <circle cx="1200" cy="800" r="220" fill="url(#blueGrad)"/>
+                <text x="1200" y="750" font-size="36" font-weight="700" fill="white" text-anchor="middle">Climate Indices</text>
+                <text x="1200" y="800" font-size="32" fill="white" text-anchor="middle">&</text>
+                <text x="1200" y="860" font-size="36" font-weight="700" fill="white" text-anchor="middle">Citizen Science</text>
+            </g>
+
+            <!-- ============== LEFT: CLIMATE INDICES ============== -->
+            <g filter="url(#shadow)">
+                <!-- Section Header -->
+                <rect x="100" y="320" width="250" height="60" rx="30" fill="#e8eaf6"/>
+                <text x="225" y="360" font-size="22" font-weight="700" fill="#5e72e4" text-anchor="middle">CLIMATE INDICES</text>
+
+                <!-- ETCCDI Main Box -->
+                <rect x="170" y="670" width="240" height="150" rx="25" fill="url(#blueGrad)"/>
+                <text x="290" y="730" font-size="28" font-weight="700" fill="white" text-anchor="middle">ETCCDI</text>
+                <text x="290" y="770" font-size="22" fill="white" text-anchor="middle" opacity="0.95">Climate Indices</text>
+
+                <!-- Rainfall Indices - Top Row -->
+                <rect x="120" y="440" width="150" height="80" rx="18" fill="white" stroke="#667eea" stroke-width="4"/>
+                <text x="195" y="490" font-size="24" font-weight="700" fill="#667eea" text-anchor="middle">R10mm</text>
+
+                <rect x="310" y="440" width="150" height="80" rx="18" fill="white" stroke="#667eea" stroke-width="4"/>
+                <text x="385" y="490" font-size="24" font-weight="700" fill="#667eea" text-anchor="middle">R25mm</text>
+
+                <!-- Rainfall Indices - Bottom Row -->
+                <rect x="120" y="550" width="150" height="80" rx="18" fill="white" stroke="#667eea" stroke-width="4"/>
+                <text x="195" y="600" font-size="24" font-weight="700" fill="#667eea" text-anchor="middle">R50mm</text>
+
+                <rect x="310" y="550" width="160" height="80" rx="18" fill="white" stroke="#667eea" stroke-width="4"/>
+                <text x="390" y="600" font-size="24" font-weight="700" fill="#667eea" text-anchor="middle">R100mm</text>
+
+                <!-- CDD/CWD -->
+                <rect x="170" y="860" width="120" height="80" rx="18" fill="white" stroke="#667eea" stroke-width="4"/>
+                <text x="230" y="910" font-size="24" font-weight="700" fill="#667eea" text-anchor="middle">CDD</text>
+
+                <rect x="320" y="860" width="120" height="80" rx="18" fill="white" stroke="#667eea" stroke-width="4"/>
+                <text x="380" y="910" font-size="24" font-weight="700" fill="#667eea" text-anchor="middle">CWD</text>
+
+                <!-- Connections - made straight for clarity -->
+                <line x1="195" y1="520" x2="260" y2="670" stroke="#667eea" stroke-width="3" opacity="0.6"/>
+                <line x1="385" y1="520" x2="320" y2="670" stroke="#667eea" stroke-width="3" opacity="0.6"/>
+                <line x1="195" y1="630" x2="250" y2="670" stroke="#667eea" stroke-width="3" opacity="0.6"/>
+                <line x1="390" y1="630" x2="330" y2="670" stroke="#667eea" stroke-width="3" opacity="0.6"/>
+                <line x1="230" y1="860" x2="270" y2="820" stroke="#667eea" stroke-width="3" opacity="0.6"/>
+                <line x1="380" y1="860" x2="310" y2="820" stroke="#667eea" stroke-width="3" opacity="0.6"/>
+            </g>
+
+            <!-- Connection left to center - straight -->
+            <line x1="410" y1="745" x2="970" y2="790" stroke="url(#blueGrad)" stroke-width="5" opacity="0.4" stroke-dasharray="15,7"/>
+
+            <!-- ============== LEFT BOTTOM: DATA VALIDATION ============== -->
+            <g filter="url(#shadow)">
+                <rect x="100" y="1040" width="300" height="60" rx="30" fill="#fce4ec"/>
+                <text x="250" y="1080" font-size="22" font-weight="700" fill="#f5576c" text-anchor="middle">DATA VALIDATION</text>
+
+                <rect x="140" y="1160" width="270" height="130" rx="25" fill="url(#pinkGrad)"/>
+                <text x="275" y="1220" font-size="26" font-weight="700" fill="white" text-anchor="middle">Data</text>
+                <text x="275" y="1260" font-size="26" font-weight="700" fill="white" text-anchor="middle">Comparison</text>
+
+                <ellipse cx="185" cy="1370" rx="115" ry="55" fill="white" stroke="#f5576c" stroke-width="4"/>
+                <text x="185" y="1365" font-size="18" font-weight="600" fill="#f5576c" text-anchor="middle">Correlation</text>
+                <text x="185" y="1385" font-size="18" font-weight="600" fill="#f5576c" text-anchor="middle">Coefficient</text>
+
+                <ellipse cx="370" cy="1370" rx="115" ry="55" fill="white" stroke="#f5576c" stroke-width="4"/>
+                <text x="370" y="1365" font-size="18" font-weight="600" fill="#f5576c" text-anchor="middle">Reference</text>
+                <text x="370" y="1385" font-size="18" font-weight="600" fill="#f5576c" text-anchor="middle">Data</text>
+
+                <!-- Connections - straight -->
+                <line x1="185" y1="1315" x2="250" y2="1290" stroke="#f5576c" stroke-width="3" opacity="0.6"/>
+                <line x1="370" y1="1315" x2="305" y2="1290" stroke="#f5576c" stroke-width="3" opacity="0.6"/>
+            </g>
+
+            <!-- Connection validation to center - straight -->
+            <line x1="410" y1="1225" x2="970" y2="840" stroke="url(#pinkGrad)" stroke-width="5" opacity="0.4" stroke-dasharray="15,7"/>
+
+            <!-- ============== RIGHT TOP: COMMUNITY ENGAGEMENT ============== -->
+            <g filter="url(#shadow)">
+                <rect x="1820" y="320" width="380" height="60" rx="30" fill="#e0f2f1"/>
+                <text x="2010" y="360" font-size="22" font-weight="700" fill="#11998e" text-anchor="middle">COMMUNITY ENGAGEMENT</text>
+
+                <circle cx="1870" cy="550" r="130" fill="url(#tealGrad)"/>
+                <text x="1870" y="535" font-size="28" font-weight="700" fill="white" text-anchor="middle">Citizen</text>
+                <text x="1870" y="575" font-size="28" font-weight="700" fill="white" text-anchor="middle">Science</text>
+
+                <!-- Stakeholders - spaced out more -->
+                <circle cx="2120" cy="420" r="80" fill="white" stroke="#11998e" stroke-width="4"/>
+                <text x="2120" y="415" font-size="18" font-weight="600" fill="#11998e" text-anchor="middle">Youth</text>
+                <text x="2120" y="440" font-size="18" font-weight="600" fill="#11998e" text-anchor="middle">Volunteers</text>
+
+                <circle cx="2230" cy="550" r="80" fill="white" stroke="#11998e" stroke-width="4"/>
+                <text x="2230" y="545" font-size="18" font-weight="600" fill="#11998e" text-anchor="middle">School</text>
+                <text x="2230" y="570" font-size="18" font-weight="600" fill="#11998e" text-anchor="middle">Teachers</text>
+
+                <circle cx="2200" cy="680" r="78" fill="white" stroke="#11998e" stroke-width="4"/>
+                <text x="2200" y="685" font-size="18" font-weight="600" fill="#11998e" text-anchor="middle">Farmers</text>
+
+                <circle cx="2070" cy="730" r="78" fill="white" stroke="#11998e" stroke-width="4"/>
+                <text x="2070" y="735" font-size="18" font-weight="600" fill="#11998e" text-anchor="middle">Students</text>
+
+                <ellipse cx="1900" cy="710" rx="110" ry="60" fill="white" stroke="#11998e" stroke-width="4"/>
+                <text x="1900" y="705" font-size="18" font-weight="600" fill="#11998e" text-anchor="middle">Ward</text>
+                <text x="1900" y="730" font-size="18" font-weight="600" fill="#11998e" text-anchor="middle">Representatives</text>
+
+                <circle cx="2020" cy="610" r="80" fill="white" stroke="#11998e" stroke-width="4"/>
+                <text x="2020" y="605" font-size="18" font-weight="600" fill="#11998e" text-anchor="middle">Women</text>
+                <text x="2020" y="630" font-size="18" font-weight="600" fill="#11998e" text-anchor="middle">Groups</text>
+
+                <!-- Connections - straight -->
+                <line x1="1960" y1="490" x2="2070" y2="420" stroke="#11998e" stroke-width="3" opacity="0.6"/>
+                <line x1="1980" y1="550" x2="2150" y2="550" stroke="#11998e" stroke-width="3" opacity="0.6"/>
+                <line x1="1970" y1="600" x2="1930" y2="710" stroke="#11998e" stroke-width="3" opacity="0.6"/>
+                <line x1="1960" y1="640" x2="2070" y2="730" stroke="#11998e" stroke-width="3" opacity="0.6"/>
+                <line x1="1920" y1="610" x2="1900" y2="710" stroke="#11998e" stroke-width="3" opacity="0.6"/>
+                <line x1="1940" y1="660" x2="2070" y2="730" stroke="#11998e" stroke-width="3" opacity="0.6"/>
+            </g>
+
+            <!-- Connection center to citizen science - straight -->
+            <line x1="1420" y1="760" x2="1730" y2="570" stroke="url(#tealGrad)" stroke-width="5" opacity="0.4" stroke-dasharray="15,7"/>
+
+            <!-- ============== RIGHT BOTTOM: SPATIAL ANALYSIS ============== -->
+            <g filter="url(#shadow)">
+                <rect x="1840" y="920" width="300" height="60" rx="30" fill="#e1f5fe"/>
+                <text x="1990" y="960" font-size="22" font-weight="700" fill="#00a8cc" text-anchor="middle">SPATIAL ANALYSIS</text>
+
+                <rect x="1800" y="1040" width="270" height="150" rx="25" fill="url(#cyanGrad)"/>
+                <text x="1935" y="1090" font-size="26" font-weight="700" fill="white" text-anchor="middle">Leeward/</text>
+                <text x="1935" y="1130" font-size="26" font-weight="700" fill="white" text-anchor="middle">Windward</text>
+                <text x="1935" y="1170" font-size="22" fill="white" text-anchor="middle" opacity="0.95">Analysis</text>
+
+                <!-- Analysis Components - spaced out -->
+                <rect x="1730" y="1240" width="220" height="90" rx="18" fill="white" stroke="#00a8cc" stroke-width="4"/>
+                <text x="1840" y="1275" font-size="20" font-weight="600" fill="#00a8cc" text-anchor="middle">Slope</text>
+                <text x="1840" y="1305" font-size="20" font-weight="600" fill="#00a8cc" text-anchor="middle">Orientation</text>
+
+                <rect x="1990" y="1240" width="210" height="90" rx="18" fill="white" stroke="#00a8cc" stroke-width="4"/>
+                <text x="2095" y="1275" font-size="20" font-weight="600" fill="#00a8cc" text-anchor="middle">Wind</text>
+                <text x="2095" y="1305" font-size="20" font-weight="600" fill="#00a8cc" text-anchor="middle">Direction</text>
+
+                <rect x="1720" y="1370" width="210" height="90" rx="18" fill="white" stroke="#00a8cc" stroke-width="4"/>
+                <text x="1825" y="1405" font-size="20" font-weight="600" fill="#00a8cc" text-anchor="middle">Exposure</text>
+                <text x="1825" y="1435" font-size="20" font-weight="600" fill="#00a8cc" text-anchor="middle">Index</text>
+
+                <rect x="1970" y="1370" width="250" height="100" rx="18" fill="white" stroke="#00a8cc" stroke-width="4"/>
+                <text x="2095" y="1405" font-size="20" font-weight="600" fill="#00a8cc" text-anchor="middle">Topographic</text>
+                <text x="2095" y="1435" font-size="20" font-weight="600" fill="#00a8cc" text-anchor="middle">Position</text>
+                <text x="2095" y="1460" font-size="20" font-weight="600" fill="#00a8cc" text-anchor="middle">Index</text>
+
+                <!-- Connections - straight -->
+                <line x1="1880" y1="1190" x2="1840" y2="1240" stroke="#00a8cc" stroke-width="3" opacity="0.6"/>
+                <line x1="1990" y1="1190" x2="2095" y2="1240" stroke="#00a8cc" stroke-width="3" opacity="0.6"/>
+                <line x1="1860" y1="1190" x2="1825" y2="1370" stroke="#00a8cc" stroke-width="3" opacity="0.6"/>
+                <line x1="2010" y1="1190" x2="2095" y2="1370" stroke="#00a8cc" stroke-width="3" opacity="0.6"/>
+            </g>
+
+            <!-- Connection center to spatial - straight -->
+            <line x1="1420" y1="840" x2="1780" y2="1090" stroke="url(#cyanGrad)" stroke-width="5" opacity="0.4" stroke-dasharray="15,7"/>
+
+            <!-- Footer -->
+            <text x="1200" y="1530" font-size="22" font-weight="600" fill="#718096" text-anchor="middle">
+                Methodological Framework for Climate & Community Research
+            </text>
+        </svg>
+    </div>
+
+    <div class="info">
+        💡 Download your professional framework diagram
+    </div>
+
+    <script>
+        function downloadSVG() {
+            const svg = document.getElementById('researchChart');
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(svg);
+            const blob = new Blob([svgString], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'climate_framework_improved.svg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadPNG() {
+            const svg = document.getElementById('researchChart');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const data = new XMLSerializer().serializeToString(svg);
+            const img = new Image();
+            const blob = new Blob([data], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            
+            canvas.width = 2400;
+            canvas.height = 1600;
+            
+            img.onload = function() {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob(function(blob) {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = 'climate_framework_improved.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
+                URL.revokeObjectURL(url);
+            };
+            
+            img.src = url;
+        }
+    </script>
+</body>
+</html>

@@ -257,12 +257,12 @@ export default function AdvancedBillingScreen() {
       if (data.success && data.bill) {
         const bill = data.bill
         const cartItems = bill.items.map(item => ({
-          id: item.product_id,
+          id: item.global_product_id,
           name: item.product_name,
           barcode: item.product_barcode,
           price: item.price,
           quantity: item.quantity,
-          stock: products.find(p => p.id === item.product_id)?.stock || 0
+          stock: products.find(p => p.id === item.global_product_id)?.stock || 0
         }))
         
         setCart(cartItems)

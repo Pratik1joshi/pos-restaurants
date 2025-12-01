@@ -13,6 +13,7 @@ export default function PaymentPanel({ total, onComplete, onPrint, selectedCusto
   const [mixedOnlineMethod, setMixedOnlineMethod] = useState('bank')
   const [creditAmount, setCreditAmount] = useState('')
   const [creditPaymentMethod, setCreditPaymentMethod] = useState('cash')
+  const [creditOnlineMethod, setCreditOnlineMethod] = useState('bank')
   const [settings, setSettings] = useState(null)
 
   useEffect(() => {
@@ -64,7 +65,7 @@ export default function PaymentPanel({ total, onComplete, onPrint, selectedCusto
       cashReceived: parseFloat(cashReceived) || 0,
       discount,
       change,
-      onlineMethod: paymentMethod === 'online' ? onlineMethod : undefined,
+      onlineMethod: paymentMethod === 'online' ? onlineMethod : (paymentMethod === 'credit' && creditPaymentMethod === 'online' ? creditOnlineMethod : undefined),
       mixedCash: paymentMethod === 'mixed' ? parseFloat(mixedCash) || 0 : undefined,
       mixedOnline: paymentMethod === 'mixed' ? parseFloat(mixedOnline) || 0 : undefined,
       mixedOnlineMethod: paymentMethod === 'mixed' ? mixedOnlineMethod : undefined,
@@ -268,6 +269,50 @@ export default function PaymentPanel({ total, onComplete, onPrint, selectedCusto
               <option value="online">Online</option>
             </select>
           </div>
+
+          {/* Online QR for Credit Payment */}
+          {creditPaymentMethod === 'online' && settings && amountPaidNow > 0 && (
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCreditOnlineMethod('bank')}
+                  type="button"
+                  className={`flex-1 py-2 px-3 rounded border text-sm font-semibold transition-colors ${
+                    creditOnlineMethod === 'bank' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-muted'
+                  }`}
+                >
+                  Bank
+                </button>
+                <button
+                  onClick={() => setCreditOnlineMethod('esewa')}
+                  type="button"
+                  className={`flex-1 py-2 px-3 rounded border text-sm font-semibold transition-colors ${
+                    creditOnlineMethod === 'esewa' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-muted'
+                  }`}
+                >
+                  eSewa
+                </button>
+              </div>
+              {creditOnlineMethod === 'bank' && settings.bankQR && (
+                <div className="border border-border rounded-lg p-3 bg-white dark:bg-slate-900">
+                  <p className="text-xs text-muted-foreground mb-2 text-center">Scan to pay Rs {amountPaidNow.toFixed(2)}</p>
+                  <img src={settings.bankQR} alt="Bank QR" className="w-48 h-48 mx-auto" />
+                </div>
+              )}
+              {creditOnlineMethod === 'esewa' && settings.esewaQR && (
+                <div className="border border-border rounded-lg p-3 bg-white dark:bg-slate-900">
+                  <p className="text-xs text-muted-foreground mb-2 text-center">Scan to pay Rs {amountPaidNow.toFixed(2)}</p>
+                  <img src={settings.esewaQR} alt="eSewa QR" className="w-48 h-48 mx-auto" />
+                </div>
+              )}
+              {creditOnlineMethod === 'bank' && !settings.bankQR && (
+                <p className="text-xs text-destructive">Bank QR not configured in settings</p>
+              )}
+              {creditOnlineMethod === 'esewa' && !settings.esewaQR && (
+                <p className="text-xs text-destructive">eSewa QR not configured in settings</p>
+              )}
+            </div>
+          )}
 
           <div className="border-t border-orange-200 dark:border-orange-800 pt-2 space-y-1">
             <div className="flex justify-between text-sm">

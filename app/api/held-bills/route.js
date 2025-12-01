@@ -29,7 +29,7 @@ export async function GET(request) {
     const bills = db.prepare(`
       SELECT hb.*, 
         (SELECT COUNT(*) FROM held_bill_items WHERE held_bill_id = hb.id) as item_count,
-        (SELECT SUM(subtotal) FROM held_bill_items WHERE held_bill_id = hb.id) as total
+        (SELECT SUM(price * quantity) FROM held_bill_items WHERE held_bill_id = hb.id) as total
       FROM held_bills hb
       ORDER BY hb.created_at DESC
     `).all()
@@ -47,6 +47,7 @@ export async function GET(request) {
 // POST - Create new held bill
 export async function POST(request) {
   try {
+    const db = getShopDbFromRequest(request)
     const body = await request.json()
     const { items, held_by } = body
 
@@ -77,10 +78,10 @@ export async function POST(request) {
       // Insert held bill items
       const itemStmt = db.prepare(`
         INSERT INTO held_bill_items (
-          held_bill_id, product_id, product_name, product_barcode, 
-          quantity, price, subtotal
+          held_bill_id, global_product_id, product_name, product_barcode, 
+          quantity, price
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?)
       `)
 
       for (const item of items) {
@@ -90,8 +91,7 @@ export async function POST(request) {
           item.name,
           item.barcode,
           item.quantity,
-          item.price,
-          item.price * item.quantity
+          item.price
         )
       }
 
