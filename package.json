@@ -2,11 +2,15 @@
   "name": "pos-system",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:init": "node lib/db/seed.js",
+    "db:seed": "node lib/db/seed.js",
+    "db:reset": "rm -f pos_restaurant.db && node lib/db/seed.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

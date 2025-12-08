@@ -1,120 +1,155 @@
-import { NextResponse } from 'next/server'
-import adminDb from '@/lib/admin-db'
+import { NextResponse } from 'next/server';
+import Database from '@/lib/db/index';
+import { getNepaliDateString } from '@/lib/time-utils';
 
-export async function GET() {
+export async function GET(request) {
   try {
-    // Total shops
-    const totalShops = adminDb.prepare('SELECT COUNT(*) as count FROM shops').get()
-    
-    // Active shops
-    const activeShops = adminDb.prepare(`
-      SELECT COUNT(*) as count FROM shops WHERE subscription_status = 'active'
-    `).get()
-    
-    // Total revenue this month
-    const revenueThisMonth = adminDb.prepare(`
+    const db = Database.getInstance().db;
+    const todayNepali = getNepaliDateString(new Date());
+
+    // Get today's sales and payments
+    const todaySalesResult = db.prepare(`
       SELECT COALESCE(SUM(amount), 0) as total
-      FROM payments
-      WHERE strftime('%Y-%m', payment_date) = strftime('%Y-%m', 'now')
-        AND status = 'paid'
-    `).get()
-    
-    // Total transactions across all shops (this month)
-    const transactionsThisMonth = adminDb.prepare(`
+      FROM bill_payments
+      WHERE DATE(created_at) = ?
+    `).get(todayNepali);
+
+    // Get today's orders count
+    const todayOrdersResult = db.prepare(`
       SELECT COUNT(*) as count
-      FROM all_transactions
-      WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
-    `).get()
+      FROM orders
+      WHERE DATE(created_at) = ? AND status = 'completed'
+    `).get(todayNepali);
+
+    // Get total products count
+    const productsResult = db.prepare(`
+      SELECT COUNT(*) as count
+      FROM products
+      WHERE is_available = 1
+    `).get();
+
+    // Get total employees count
+    const employeesResult = db.prepare(`
+      SELECT COUNT(*) as count
+      FROM users
+      WHERE role != 'admin'
+    `).get();
+
+    // Get weekly sales (last 7 days)
+    const weeklySales = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = getNepaliDateString(date);
+      const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+      
+      const daySales = db.prepare(`
+        SELECT COALESCE(SUM(amount), 0) as total
+        FROM bill_payments
+        WHERE DATE(created_at) = ?
+      `).get(dateStr);
+      
+      weeklySales.push({
+        day: dayName,
+        sales: daySales.total || 0
+      });
+    }
+
+    // Get revenue by order type (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const thirtyDaysAgoStr = getNepaliDateString(thirtyDaysAgo);
     
-    // Total sales across all shops (this month)
-    const salesThisMonth = adminDb.prepare(`
-      SELECT COALESCE(SUM(final_total), 0) as total
-      FROM all_transactions
-      WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
-    `).get()
-    
-    // Top 10 shops by sales
-    const topShops = adminDb.prepare(`
+    const revenueByType = db.prepare(`
       SELECT 
-        s.id,
-        s.shop_name,
-        s.city,
-        COALESCE(SUM(at.final_total), 0) as total_sales,
-        COUNT(at.id) as transaction_count
-      FROM shops s
-      LEFT JOIN all_transactions at ON s.id = at.shop_id
-        AND strftime('%Y-%m', at.created_at) = strftime('%Y-%m', 'now')
-      GROUP BY s.id
-      ORDER BY total_sales DESC
-      LIMIT 10
-    `).all()
+        order_type,
+        COUNT(*) as count,
+        COALESCE(SUM(total_amount), 0) as total
+      FROM orders
+      WHERE DATE(created_at) >= ? AND status = 'completed'
+      GROUP BY order_type
+    `).all(thirtyDaysAgoStr);
+
+    // Calculate total for percentages
+    const totalRevenue = revenueByType.reduce((sum, r) => sum + (r.total || 0), 0);
+    const revenueSources = revenueByType.map(r => ({
+      type: r.order_type || 'dine-in',
+      percentage: totalRevenue > 0 ? Math.round((r.total / totalRevenue) * 100) : 0,
+      amount: r.total || 0
+    }));
+
+    // Get low stock items
+    const lowStockItems = db.prepare(`
+      SELECT name, current_stock, unit, min_stock_level
+      FROM stock_items
+      WHERE current_stock <= min_stock_level
+      ORDER BY (current_stock - min_stock_level) ASC
+      LIMIT 5
+    `).all();
+
+    // Get monthly sales
+    const firstDayOfMonth = new Date();
+    firstDayOfMonth.setDate(1);
+    const monthStartStr = getNepaliDateString(firstDayOfMonth);
     
-    // Top 10 products across all shops
-    const topProducts = adminDb.prepare(`
-      SELECT 
-        product_name,
-        COUNT(*) as times_sold,
-        SUM(quantity) as total_quantity,
-        SUM(subtotal) as total_revenue
-      FROM all_transaction_items
-      WHERE product_name IS NOT NULL
-      GROUP BY product_name
-      ORDER BY total_revenue DESC
-      LIMIT 10
-    `).all()
+    const monthlySalesResult = db.prepare(`
+      SELECT COALESCE(SUM(amount), 0) as total
+      FROM bill_payments
+      WHERE DATE(created_at) >= ?
+    `).get(monthStartStr);
+
+    // Get last month sales for growth calculation
+    const lastMonthStart = new Date();
+    lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
+    lastMonthStart.setDate(1);
+    const lastMonthEnd = new Date();
+    lastMonthEnd.setDate(0); // Last day of previous month
     
-    // Shops by city
-    const shopsByCity = adminDb.prepare(`
-      SELECT city, COUNT(*) as count
-      FROM shops
-      WHERE city IS NOT NULL
-      GROUP BY city
-      ORDER BY count DESC
-      LIMIT 10
-    `).all()
-    
-    // Recent sync logs
-    const recentSyncs = adminDb.prepare(`
-      SELECT 
-        sl.*,
-        s.shop_name
-      FROM sync_logs sl
-      JOIN shops s ON sl.shop_id = s.id
-      ORDER BY sl.started_at DESC
-      LIMIT 10
-    `).all()
-    
-    // Pending payments
-    const pendingPayments = adminDb.prepare(`
-      SELECT 
-        p.*,
-        s.shop_name,
-        s.owner_name,
-        s.owner_phone
-      FROM payments p
-      JOIN shops s ON p.shop_id = s.id
-      WHERE p.status = 'pending'
-      ORDER BY p.period_end ASC
-    `).all()
+    const lastMonthSalesResult = db.prepare(`
+      SELECT COALESCE(SUM(amount), 0) as total
+      FROM bill_payments
+      WHERE DATE(created_at) >= ? AND DATE(created_at) <= ?
+    `).get(getNepaliDateString(lastMonthStart), getNepaliDateString(lastMonthEnd));
+
+    const growthPercent = lastMonthSalesResult.total > 0 
+      ? Math.round(((monthlySalesResult.total - lastMonthSalesResult.total) / lastMonthSalesResult.total) * 100)
+      : 0;
+
+    // Calculate average order value
+    const avgOrderResult = db.prepare(`
+      SELECT COALESCE(AVG(amount), 0) as avg
+      FROM bill_payments
+      WHERE DATE(created_at) >= ?
+    `).get(monthStartStr);
+
+    // Get today's costs (mock - you can add actual costs table)
+    const todayCosts = todaySalesResult.total * 0.6; // Assume 60% cost ratio
 
     return NextResponse.json({
-      success: true,
       stats: {
-        totalShops: totalShops.count,
-        activeShops: activeShops.count,
-        trialShops: totalShops.count - activeShops.count,
-        revenueThisMonth: revenueThisMonth.total,
-        transactionsThisMonth: transactionsThisMonth.count,
-        salesThisMonth: salesThisMonth.total
-      },
-      topShops,
-      topProducts,
-      shopsByCity,
-      recentSyncs,
-      pendingPayments
-    })
-
+        todaySales: todaySalesResult.total || 0,
+        todayOrders: todayOrdersResult.count || 0,
+        todayCosts: todayCosts,
+        totalProducts: productsResult.count || 0,
+        totalEmployees: employeesResult.count || 0,
+        monthlySales: monthlySalesResult.total || 0,
+        avgOrder: avgOrderResult.avg || 0,
+        growthPercent: growthPercent,
+        weeklySales: weeklySales,
+        revenueSources: revenueSources,
+        lowStockItems: lowStockItems.map(item => ({
+          name: item.name,
+          qty: item.current_stock,
+          unit: item.unit,
+          status: item.current_stock <= (item.min_stock_level * 0.5) ? 'critical' : 'low'
+        }))
+      }
+    });
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    console.error('Dashboard stats error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch dashboard stats', details: error.message },
+      { status: 500 }
+    );
   }
 }

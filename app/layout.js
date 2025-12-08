@@ -1,13 +1,15 @@
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
+import { AuthProvider } from '@/lib/auth-context'
+import { ToastProvider } from '@/components/ui/toast'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata = {
-  title: 'POS System - Retail Management',
-  description: 'Professional POS & Inventory Management System',
+  title: 'Restaurant POS System',
+  description: 'Modern restaurant point of sale system with offline support',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -44,7 +46,11 @@ export default function RootLayout({ children }) {
         }} />
       </head>
       <body className={`font-sans antialiased`}>
-        {children}
+        <AuthProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </AuthProvider>
         <Analytics />
       </body>
     </html>

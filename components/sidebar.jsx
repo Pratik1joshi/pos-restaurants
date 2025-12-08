@@ -1,13 +1,13 @@
 'use client'
 
-import { BarChart3, Package, ShoppingCart, FileText, Users, Settings, Home, Store } from 'lucide-react'
+import { BarChart3, ChefHat, Package, UtensilsCrossed, FileText, Users, Settings, Home, Store } from 'lucide-react'
 
 export default function Sidebar({ currentPage, onNavigate, shopInfo, onLogout }) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'products', label: 'Products', icon: Package },
-    { id: 'inventory', label: 'Inventory', icon: ShoppingCart },
-    { id: 'billing', label: 'Billing', icon: ShoppingCart },
+    { id: 'orders', label: 'Orders', icon: UtensilsCrossed },
+    { id: 'menu', label: 'Menu Items', icon: ChefHat },
+    { id: 'ingredients', label: 'Ingredients', icon: Package },
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'settings', label: 'Settings', icon: Settings },
@@ -21,7 +21,7 @@ export default function Sidebar({ currentPage, onNavigate, shopInfo, onLogout })
       <div className="px-2 py-4 mb-4">
         <div className="flex items-center gap-2 text-primary font-bold text-lg">
           <Store size={28} />
-          <span className="hidden sm:inline">{shopInfo?.name || 'RetailPOS'}</span>
+          <span className="hidden sm:inline">{shopInfo?.name || 'RestaurantPOS'}</span>
         </div>
         {/* {shopInfo && ( */}
           {/* // <div className="mt-3 p-2 bg-primary/10 rounded-lg text-xs">

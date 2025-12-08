@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import adminDb from '@/lib/admin-db'
-import { getShopDatabase } from '@/lib/shop-db'
+import { getRestaurantDatabase } from '@/lib/shop-db'
 
 // GET - List all shops
 export async function GET() {
@@ -108,7 +108,7 @@ export async function POST(request) {
     )
 
     // Create shop's local database
-    const shopDb = getShopDatabase(shopId)
+    const shopDb = getRestaurantDatabase(shopId)
     shopDb.prepare(`
       INSERT INTO shop_info (shop_id, shop_name, owner_name, phone, address, city)
       VALUES (?, ?, ?, ?, ?, ?)

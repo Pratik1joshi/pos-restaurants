@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import adminDb from '@/lib/admin-db'
-import { getShopDatabase } from '@/lib/shop-db'
+import { getRestaurantDatabase } from '@/lib/shop-db'
 
 export async function POST(request) {
   try {
@@ -23,7 +23,7 @@ export async function POST(request) {
     }
 
     // Get shop database
-    const shopDb = getShopDatabase(shop_id)
+    const shopDb = getRestaurantDatabase(shop_id)
 
     // Sync transactions from sync_queue
     const pendingTransactions = shopDb.prepare('SELECT * FROM sync_queue WHERE synced = 0').all()
