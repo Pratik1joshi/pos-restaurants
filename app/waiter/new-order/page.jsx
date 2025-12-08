@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { useToast } from '@/components/ui/toast'
 import { ArrowLeft, Plus, Minus, Search, ShoppingCart, Send, X } from 'lucide-react'
 
-export default function NewOrderPage() {
+function NewOrderContent() {
   const { user, apiCall } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -604,5 +604,20 @@ export default function NewOrderPage() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+export default function NewOrderPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-800 text-lg">Loading...</p>
+        </div>
+      </div>
+    }>
+      <NewOrderContent />
+    </Suspense>
   )
 }
