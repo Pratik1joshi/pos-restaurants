@@ -281,54 +281,64 @@ export default function BillDetailsPage({ params }) {
           @media print {
             @page {
               size: 80mm auto;
+              margin: 0mm;
+            }
+            body {
               margin: 0;
+              padding: 2mm;
             }
           }
           * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            page-break-inside: avoid;
+            page-break-after: avoid;
+            page-break-before: avoid;
           }
           body {
             width: 80mm;
+            max-width: 80mm;
             font-family: 'Courier New', monospace;
-            font-size: 12px;
-            padding: 5mm;
-            line-height: 1.4;
+            font-size: 11px;
+            padding: 2mm;
+            line-height: 1.3;
+            background: white;
+            page-break-inside: avoid;
           }
           .header {
             text-align: center;
-            margin-bottom: 10px;
-            border-bottom: 2px dashed #000;
-            padding-bottom: 10px;
+            margin-bottom: 5px;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 5px;
           }
           .shop-name {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
           }
           .bill-info {
-            margin: 10px 0;
-            font-size: 11px;
+            margin: 5px 0;
+            font-size: 10px;
           }
           .bill-info div {
-            margin: 3px 0;
+            margin: 2px 0;
           }
           table {
             width: 100%;
-            margin: 10px 0;
+            margin: 5px 0;
             border-collapse: collapse;
           }
           th {
             border-top: 1px dashed #000;
             border-bottom: 1px dashed #000;
-            padding: 5px 0;
+            padding: 3px 0;
             text-align: left;
-            font-size: 11px;
+            font-size: 10px;
           }
           td {
-            padding: 5px 0;
-            font-size: 11px;
+            padding: 2px 0;
+            font-size: 10px;
           }
           .item-name {
             width: 50%;
@@ -347,33 +357,33 @@ export default function BillDetailsPage({ params }) {
           }
           .totals {
             border-top: 1px dashed #000;
-            margin-top: 10px;
-            padding-top: 5px;
+            margin-top: 5px;
+            padding-top: 3px;
           }
           .total-row {
             display: flex;
             justify-content: space-between;
-            margin: 3px 0;
-            font-size: 11px;
+            margin: 2px 0;
+            font-size: 10px;
           }
           .grand-total {
-            border-top: 2px dashed #000;
-            border-bottom: 2px dashed #000;
-            padding: 8px 0;
-            margin: 8px 0;
-            font-size: 14px;
+            border-top: 1px dashed #000;
+            border-bottom: 1px dashed #000;
+            padding: 5px 0;
+            margin: 5px 0;
+            font-size: 13px;
             font-weight: bold;
           }
           .payment-info {
-            margin: 10px 0;
-            font-size: 11px;
+            margin: 5px 0;
+            font-size: 10px;
           }
           .footer {
             text-align: center;
-            margin-top: 15px;
-            border-top: 2px dashed #000;
-            padding-top: 10px;
-            font-size: 11px;
+            margin-top: 8px;
+            border-top: 1px dashed #000;
+            padding-top: 5px;
+            font-size: 10px;
           }
         </style>
       </head>
