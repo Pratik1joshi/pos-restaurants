@@ -281,11 +281,7 @@ export default function BillDetailsPage({ params }) {
           @media print {
             @page {
               size: 80mm auto;
-              margin: 0mm;
-            }
-            body {
               margin: 0;
-              padding: 3mm;
             }
           }
           * {
@@ -294,16 +290,14 @@ export default function BillDetailsPage({ params }) {
             box-sizing: border-box;
           }
           body {
-            width: 80mm;
-            max-width: 80mm;
+            width: 302px;
+            max-width: 302px;
+            margin: 0 auto;
             font-family: 'Courier New', monospace;
             font-size: 11px;
-            padding: 3mm;
+            padding: 8px;
             line-height: 1.3;
             background: white;
-          }
-          table, .header, .bill-info, .totals, .payment-info, .footer {
-            page-break-inside: auto;
           }
           .header {
             text-align: center;
