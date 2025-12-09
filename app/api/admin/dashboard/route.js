@@ -14,18 +14,18 @@ export async function GET(request) {
       WHERE DATE(created_at) = ?
     `).get(todayNepali);
 
-    // Get today's orders count
+    // Get today's orders count (paid bills)
     const todayOrdersResult = db.prepare(`
       SELECT COUNT(*) as count
-      FROM orders
-      WHERE DATE(created_at) = ? AND status = 'completed'
+      FROM bills
+      WHERE DATE(created_at) = ? AND status = 'paid'
     `).get(todayNepali);
 
     // Get total menu items count
     const productsResult = db.prepare(`
       SELECT COUNT(*) as count
       FROM menu_items
-      WHERE is_active = 1
+      WHERE is_available = 1
     `).get();
 
     // Get total employees count
@@ -62,26 +62,31 @@ export async function GET(request) {
     
     const revenueByType = db.prepare(`
       SELECT 
-        order_type,
+        o.order_type as order_type,
         COUNT(*) as count,
-        COALESCE(SUM(total_amount), 0) as total
-      FROM orders
-      WHERE DATE(created_at) >= ? AND DATE(created_at) <= ? AND status = 'completed'
-      GROUP BY order_type
+        COALESCE(SUM(b.grand_total), 0) as total
+      FROM bills b
+      JOIN orders o ON b.order_id = o.id
+      WHERE DATE(b.created_at) >= ? AND DATE(b.created_at) <= ? AND b.status = 'paid'
+      GROUP BY o.order_type
     `).all(thirtyDaysAgoStr, todayNepali);
 
     // Calculate total for percentages
-    const totalRevenue = revenueByType.reduce((sum, r) => sum + (r.total || 0), 0);
+    const totalRevenue = revenueByType.reduce((sum, r) => sum + Number(r.total || 0), 0);
     const revenueSources = revenueByType.map(r => ({
-      type: r.order_type || 'dine-in',
-      percentage: totalRevenue > 0 ? Math.round((r.total / totalRevenue) * 100) : 0,
-      amount: r.total || 0
+      type: String(r.order_type || 'dine-in'),
+      percentage: totalRevenue > 0 ? Math.round((Number(r.total) / totalRevenue) * 100) : 0,
+      amount: Number(r.total || 0)
     }));
 
-    // Get low stock items
+    // Get low stock items from ingredients table
     const lowStockItems = db.prepare(`
-      SELECT name, current_stock, unit, min_stock_level
-      FROM stock_items
+      SELECT 
+        name,
+        current_stock,
+        unit,
+        min_stock_level
+      FROM ingredients
       WHERE current_stock <= min_stock_level
       ORDER BY (current_stock - min_stock_level) ASC
       LIMIT 5

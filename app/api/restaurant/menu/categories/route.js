@@ -5,20 +5,12 @@ export async function GET(request) {
   try {
     const db = Database.getInstance().db;
     
-    // Check if category column exists, if not add it
-    const tableInfo = db.prepare('PRAGMA table_info(menu_items)').all();
-    const hasCategory = tableInfo.some(col => col.name === 'category');
-    
-    if (!hasCategory) {
-      db.prepare('ALTER TABLE menu_items ADD COLUMN category TEXT DEFAULT "Uncategorized"').run();
-    }
-    
-    // Get unique categories from menu_items
+    // Get categories from menu_categories table
     const categories = db.prepare(`
-      SELECT DISTINCT category as name
-      FROM menu_items
-      WHERE is_available = 1 AND category IS NOT NULL
-      ORDER BY category
+      SELECT id, name, display_order
+      FROM menu_categories
+      WHERE is_active = 1
+      ORDER BY display_order, name
     `).all();
 
     return NextResponse.json({ categories });

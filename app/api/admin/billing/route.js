@@ -12,22 +12,13 @@ export async function POST(request) {
       const orderResult = db.prepare(`
         INSERT INTO orders (
           order_number, customer_name, customer_phone, 
-          total, discount, tax, final_total,
-          payment_method, amount_paid, change_amount,
           status, order_type
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?)
       `).run(
         orderData.order_number,
         orderData.customer_name,
         orderData.customer_phone || null,
-        orderData.total,
-        orderData.discount,
-        orderData.tax,
-        orderData.final_total,
-        orderData.payment_method,
-        orderData.amount_paid,
-        orderData.change_amount,
-        orderData.status,
+        'served',
         orderData.order_type
       );
 
@@ -36,30 +27,68 @@ export async function POST(request) {
       // Insert order items
       const insertItem = db.prepare(`
         INSERT INTO order_items (
-          order_id, menu_item_id, menu_item_name,
-          quantity, price, subtotal, status
-        ) VALUES (?, ?, ?, ?, ?, ?, 'completed')
+          order_id, menu_item_id,
+          quantity, unit_price, subtotal, status
+        ) VALUES (?, ?, ?, ?, ?, 'served')
       `);
 
       for (const item of orderData.items) {
         insertItem.run(
           orderId,
           item.menu_item_id,
-          item.menu_item_name,
           item.quantity,
           item.price,
           item.subtotal
         );
       }
 
-      return orderId;
+      // Create bill
+      const billResult = db.prepare(`
+        INSERT INTO bills (
+          bill_number, order_id,
+          subtotal, service_charge, service_charge_percent,
+          tax, tax_percent,
+          discount_amount, discount_type,
+          grand_total, status, cashier_id, paid_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'paid', ?, CURRENT_TIMESTAMP)
+      `).run(
+        orderData.bill_number,
+        orderId,
+        orderData.subtotal,
+        0,
+        0,
+        orderData.tax,
+        orderData.tax_percent,
+        orderData.discount,
+        orderData.discount > 0 ? 'amount' : null,
+        orderData.final_total,
+        orderData.cashier_id || null
+      );
+
+      const billId = billResult.lastInsertRowid;
+
+      // Insert payment
+      db.prepare(`
+        INSERT INTO bill_payments (
+          bill_id, payment_method, amount, notes
+        ) VALUES (?, ?, ?, ?)
+      `).run(
+        billId,
+        orderData.payment_method === 'online' ? 'qr' : orderData.payment_method,
+        orderData.amount_paid,
+        orderData.payment_method === 'cash' && orderData.change_amount > 0 
+          ? `Change: ${orderData.change_amount}` 
+          : null
+      );
+
+      return { orderId, billId };
     });
 
-    const orderId = createOrder(data);
+    const result = createOrder(data);
 
     return NextResponse.json({ 
       message: 'Order created successfully',
-      orderId 
+      ...result
     }, { status: 201 });
   } catch (error) {
     console.error('Create billing order error:', error);

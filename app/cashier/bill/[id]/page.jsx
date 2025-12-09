@@ -252,6 +252,9 @@ export default function BillDetailsPage({ params }) {
       if (response.ok) {
         setReceiptData(data.receipt);
         setShowReceipt(true);
+        
+        // Print thermal bill immediately
+        printThermalBill(data.receipt);
       } else {
         alert(data.error || 'Failed to process payment');
       }
@@ -264,8 +267,243 @@ export default function BillDetailsPage({ params }) {
     }
   };
 
+  const printThermalBill = (receipt) => {
+    const printWindow = window.open('', '', 'width=300,height=600');
+    
+    const billHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Bill - ${receipt.order_id}</title>
+        <style>
+          @media print {
+            @page {
+              size: 80mm auto;
+              margin: 0;
+            }
+          }
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          body {
+            width: 80mm;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 5mm;
+            line-height: 1.4;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 10px;
+            border-bottom: 2px dashed #000;
+            padding-bottom: 10px;
+          }
+          .shop-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+          }
+          .bill-info {
+            margin: 10px 0;
+            font-size: 11px;
+          }
+          .bill-info div {
+            margin: 3px 0;
+          }
+          table {
+            width: 100%;
+            margin: 10px 0;
+            border-collapse: collapse;
+          }
+          th {
+            border-top: 1px dashed #000;
+            border-bottom: 1px dashed #000;
+            padding: 5px 0;
+            text-align: left;
+            font-size: 11px;
+          }
+          td {
+            padding: 5px 0;
+            font-size: 11px;
+          }
+          .item-name {
+            width: 50%;
+          }
+          .item-qty {
+            width: 15%;
+            text-align: center;
+          }
+          .item-price {
+            width: 17.5%;
+            text-align: right;
+          }
+          .item-total {
+            width: 17.5%;
+            text-align: right;
+          }
+          .totals {
+            border-top: 1px dashed #000;
+            margin-top: 10px;
+            padding-top: 5px;
+          }
+          .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+            font-size: 11px;
+          }
+          .grand-total {
+            border-top: 2px dashed #000;
+            border-bottom: 2px dashed #000;
+            padding: 8px 0;
+            margin: 8px 0;
+            font-size: 14px;
+            font-weight: bold;
+          }
+          .payment-info {
+            margin: 10px 0;
+            font-size: 11px;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 15px;
+            border-top: 2px dashed #000;
+            padding-top: 10px;
+            font-size: 11px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="shop-name">${settings.restaurant_name || 'RESTAURANT POS'}</div>
+          ${settings.restaurant_address ? `<div style="font-size: 10px; margin-top: 3px;">${settings.restaurant_address}</div>` : ''}
+          ${settings.restaurant_phone ? `<div style="font-size: 10px;">Tel: ${settings.restaurant_phone}</div>` : ''}
+          <div style="margin-top: 5px;">Tax Invoice</div>
+        </div>
+
+        <div class="bill-info">
+          <div><strong>Receipt No:</strong> #${receipt.order_id.toString().padStart(6, '0')}</div>
+          <div><strong>Date:</strong> ${new Date(receipt.processed_at).toLocaleString('en-NP', { timeZone: 'Asia/Kathmandu' })}</div>
+          <div><strong>Table:</strong> ${receipt.table_number}</div>
+          <div><strong>Cashier:</strong> ${receipt.processed_by}</div>
+          ${receipt.customer_name ? `<div><strong>Customer:</strong> ${receipt.customer_name}</div>` : ''}
+          ${receipt.customer_phone ? `<div><strong>Phone:</strong> ${receipt.customer_phone}</div>` : ''}
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th class="item-name">Item</th>
+              <th class="item-qty">Qty</th>
+              <th class="item-price">Price</th>
+              <th class="item-total">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(receipt.items || []).map(item => `
+              <tr>
+                <td class="item-name">${item.item_name}</td>
+                <td class="item-qty">${item.quantity}</td>
+                <td class="item-price">Rs ${item.unit_price.toFixed(2)}</td>
+                <td class="item-total">Rs ${item.subtotal.toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="totals">
+          <div class="total-row">
+            <span>Subtotal:</span>
+            <span>Rs ${receipt.subtotal.toFixed(2)}</span>
+          </div>
+          <div class="total-row">
+            <span>Tax (${settings.vat_percentage}%):</span>
+            <span>Rs ${receipt.tax_amount.toFixed(2)}</span>
+          </div>
+          <div class="total-row">
+            <span>Service (${settings.service_charge_percentage}%):</span>
+            <span>Rs ${receipt.service_charge.toFixed(2)}</span>
+          </div>
+          ${receipt.discount_amount > 0 ? `
+          <div class="total-row">
+            <span>Discount:</span>
+            <span>- Rs ${receipt.discount_amount.toFixed(2)}</span>
+          </div>
+          ` : ''}
+          <div class="total-row grand-total">
+            <span>GRAND TOTAL:</span>
+            <span>Rs ${receipt.final_amount.toFixed(2)}</span>
+          </div>
+        </div>
+
+        <div class="payment-info">
+          <div class="total-row">
+            <span><strong>Payment:</strong></span>
+            <span>${receipt.payment_method.toUpperCase()}</span>
+          </div>
+          ${receipt.split_payments ? receipt.split_payments.map(sp => `
+          <div class="total-row">
+            <span>${sp.method.toUpperCase()}:</span>
+            <span>Rs ${sp.amount.toFixed(2)}</span>
+          </div>
+          `).join('') : ''}
+          <div class="total-row">
+            <span>Amount Paid:</span>
+            <span>Rs ${receipt.amount_paid.toFixed(2)}</span>
+          </div>
+          ${receipt.change > 0 ? `
+          <div class="total-row">
+            <span>Change:</span>
+            <span>Rs ${receipt.change.toFixed(2)}</span>
+          </div>
+          ` : ''}
+        </div>
+
+        <div class="footer">
+          <div>Thank you for your visit!</div>
+          <div>Please come again</div>
+          ${settings.vat_number ? `<div style="margin-top: 5px;">VAT No: ${settings.vat_number}</div>` : ''}
+        </div>
+
+        <script>
+          // Auto-print immediately when document loads
+          window.onload = function() {
+            // Set focus to print window
+            window.focus();
+            // Print immediately
+            window.print();
+            // Close after printing
+            setTimeout(() => {
+              window.close();
+            }, 1000);
+          };
+          
+          // Backup: trigger print even before page fully loads
+          setTimeout(() => {
+            if (!window.printCalled) {
+              window.printCalled = true;
+              window.print();
+            }
+          }, 100);
+        </script>
+      </body>
+      </html>
+    `;
+    
+    printWindow.document.write(billHTML);
+    printWindow.document.close();
+    printWindow.focus();
+  };
+
   const printReceipt = () => {
-    window.print();
+    if (receiptData) {
+      printThermalBill(receiptData);
+    } else {
+      window.print();
+    }
   };
 
   const formatCurrency = (amount) => {

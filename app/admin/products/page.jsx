@@ -210,7 +210,7 @@ export default function ProductsPage() {
                   >
                     <option value="">Select category</option>
                     {categories.map(cat => (
-                      <option key={cat.name} value={cat.name}>{cat.name}</option>
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
                   </select>
                 </div>
@@ -313,7 +313,7 @@ export default function ProductsPage() {
                     <div className="font-medium text-gray-900">{product.name}</div>
                     {product.description && <div className="text-sm text-gray-800">{product.description}</div>}
                   </td>
-                  <td className="px-6 py-4 text-gray-700">{product.category_name || '-'}</td>
+                  <td className="px-6 py-4 text-gray-700">{product.category || '-'}</td>
                   <td className="px-6 py-4 font-medium text-gray-900">Rs {product.price}</td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${

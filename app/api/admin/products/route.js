@@ -6,9 +6,13 @@ export async function GET(request) {
     const db = Database.getInstance().db;
     
     const products = db.prepare(`
-      SELECT *, base_price as price
-      FROM menu_items
-      ORDER BY name
+      SELECT 
+        mi.*,
+        mi.base_price as price,
+        mc.name as category
+      FROM menu_items mi
+      LEFT JOIN menu_categories mc ON mi.category_id = mc.id
+      ORDER BY mi.name
     `).all();
 
     return NextResponse.json({ products });
@@ -28,20 +32,28 @@ export async function POST(request) {
 
     const result = db.prepare(`
       INSERT INTO menu_items (
-        name, item_code, category, price, description, 
+        name, item_code, category_id, base_price, description, 
         is_available, is_vegetarian
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `).run(
       data.name,
       data.item_code || `ITEM-${Date.now()}`,
-      data.category || 'General',
+      data.category_id || 1,
       data.price,
       data.description || null,
       data.is_available ? 1 : 0,
       data.is_vegetarian ? 1 : 0
     );
 
-    const product = db.prepare('SELECT * FROM menu_items WHERE id = ?').get(result.lastInsertRowid);
+    const product = db.prepare(`
+      SELECT 
+        mi.*,
+        mi.base_price as price,
+        mc.name as category
+      FROM menu_items mi
+      LEFT JOIN menu_categories mc ON mi.category_id = mc.id
+      WHERE mi.id = ?
+    `).get(result.lastInsertRowid);
 
     return NextResponse.json({ 
       message: 'Product created successfully',
@@ -56,57 +68,4 @@ export async function POST(request) {
   }
 }
 
-export async function PUT(request) {
-  try {
-    const data = await request.json();
-    const db = Database.getInstance().db;
 
-    db.prepare(`
-      UPDATE menu_items 
-      SET name = ?, category = ?, price = ?, 
-          description = ?, is_available = ?, is_vegetarian = ?
-      WHERE id = ?
-    `).run(
-      data.name,
-      data.category || 'General',
-      data.price,
-      data.description || null,
-      data.is_available ? 1 : 0,
-      data.is_vegetarian ? 1 : 0,
-      data.id
-    );
-
-    const product = db.prepare('SELECT * FROM menu_items WHERE id = ?').get(data.id);
-
-    return NextResponse.json({ 
-      message: 'Product updated successfully',
-      product 
-    });
-  } catch (error) {
-    console.error('Update product error:', error);
-    return NextResponse.json(
-      { error: 'Failed to update product' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    
-    const db = Database.getInstance().db;
-    db.prepare('DELETE FROM menu_items WHERE id = ?').run(id);
-
-    return NextResponse.json({ 
-      message: 'Product deleted successfully' 
-    });
-  } catch (error) {
-    console.error('Delete product error:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete product' },
-      { status: 500 }
-    );
-  }
-}
