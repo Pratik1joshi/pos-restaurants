@@ -400,25 +400,21 @@ export default function AdminBilling() {
         </div>
 
         <script>
-          // Auto-print immediately when document loads
-          window.onload = function() {
-            // Set focus to print window
-            window.focus();
-            // Print immediately
-            window.print();
-            // Close after printing
-            setTimeout(() => {
-              window.close();
-            }, 1000);
-          };
+          // Prevent double printing
+          let printed = false;
           
-          // Backup: trigger print even before page fully loads
-          setTimeout(() => {
-            if (!window.printCalled) {
-              window.printCalled = true;
+          // Single print trigger
+          window.onload = function() {
+            if (!printed) {
+              printed = true;
+              window.focus();
               window.print();
+              // Close after user finishes printing
+              setTimeout(() => {
+                window.close();
+              }, 500);
             }
-          }, 100);
+          };
         </script>
       </body>
       </html>
