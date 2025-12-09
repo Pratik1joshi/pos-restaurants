@@ -40,7 +40,19 @@ export default function SettingsPage() {
       
       if (response.ok) {
         const data = await response.json();
-        setSettings(data.settings);
+        setSettings({
+          vat_percentage: data.settings.vat_percentage ?? 13,
+          service_charge_percentage: data.settings.service_charge_percentage ?? 10,
+          restaurant_name: data.settings.restaurant_name ?? 'Himalayan Restaurant',
+          restaurant_address: data.settings.restaurant_address ?? '',
+          restaurant_phone: data.settings.restaurant_phone ?? '',
+          restaurant_email: data.settings.restaurant_email ?? '',
+          vat_number: data.settings.vat_number ?? '',
+          pan_number: data.settings.pan_number ?? '',
+          bank_qr_image: data.settings.bank_qr_image ?? '',
+          esewa_qr_image: data.settings.esewa_qr_image ?? '',
+          currency_symbol: data.settings.currency_symbol ?? 'Rs'
+        });
         if (data.settings.bank_qr_image) {
           setQrPreviews(prev => ({ ...prev, bank_qr: data.settings.bank_qr_image }));
         }

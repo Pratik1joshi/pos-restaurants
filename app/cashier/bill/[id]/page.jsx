@@ -285,26 +285,25 @@ export default function BillDetailsPage({ params }) {
             }
             body {
               margin: 0;
-              padding: 2mm;
+              padding: 3mm;
             }
           }
           * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            page-break-inside: avoid;
-            page-break-after: avoid;
-            page-break-before: avoid;
           }
           body {
             width: 80mm;
             max-width: 80mm;
             font-family: 'Courier New', monospace;
             font-size: 11px;
-            padding: 2mm;
+            padding: 3mm;
             line-height: 1.3;
             background: white;
-            page-break-inside: avoid;
+          }
+          table, .header, .bill-info, .totals, .payment-info, .footer {
+            page-break-inside: auto;
           }
           .header {
             text-align: center;
@@ -481,6 +480,8 @@ export default function BillDetailsPage({ params }) {
           ${settings.vat_number ? `<div style="margin-top: 5px;">VAT No: ${settings.vat_number}</div>` : ''}
           ${settings.pan_number ? `<div>PAN No: ${settings.pan_number}</div>` : ''}
         </div>
+
+        <div style="height: 10mm;"></div>
 
         <script>
           // Prevent double printing
