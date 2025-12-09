@@ -21,11 +21,11 @@ export async function GET(request) {
       WHERE DATE(created_at) = ? AND status = 'completed'
     `).get(todayNepali);
 
-    // Get total products count
+    // Get total menu items count
     const productsResult = db.prepare(`
       SELECT COUNT(*) as count
-      FROM products
-      WHERE is_available = 1
+      FROM menu_items
+      WHERE is_active = 1
     `).get();
 
     // Get total employees count
@@ -55,9 +55,9 @@ export async function GET(request) {
       });
     }
 
-    // Get revenue by order type (last 30 days)
+    // Get revenue by order type (last 30 days including today)
     const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29); // -29 to include today = 30 days total
     const thirtyDaysAgoStr = getNepaliDateString(thirtyDaysAgo);
     
     const revenueByType = db.prepare(`
@@ -66,9 +66,9 @@ export async function GET(request) {
         COUNT(*) as count,
         COALESCE(SUM(total_amount), 0) as total
       FROM orders
-      WHERE DATE(created_at) >= ? AND status = 'completed'
+      WHERE DATE(created_at) >= ? AND DATE(created_at) <= ? AND status = 'completed'
       GROUP BY order_type
-    `).all(thirtyDaysAgoStr);
+    `).all(thirtyDaysAgoStr, todayNepali);
 
     // Calculate total for percentages
     const totalRevenue = revenueByType.reduce((sum, r) => sum + (r.total || 0), 0);
@@ -87,40 +87,39 @@ export async function GET(request) {
       LIMIT 5
     `).all();
 
-    // Get monthly sales
-    const firstDayOfMonth = new Date();
-    firstDayOfMonth.setDate(1);
-    const monthStartStr = getNepaliDateString(firstDayOfMonth);
+    // Get monthly sales (last 30 days including today)
+    const thirtyDaysAgoForMonth = new Date();
+    thirtyDaysAgoForMonth.setDate(thirtyDaysAgoForMonth.getDate() - 29); // -29 to include today = 30 days total
+    const monthStartStr = getNepaliDateString(thirtyDaysAgoForMonth);
     
     const monthlySalesResult = db.prepare(`
       SELECT COALESCE(SUM(amount), 0) as total
       FROM bill_payments
-      WHERE DATE(created_at) >= ?
-    `).get(monthStartStr);
+      WHERE DATE(created_at) >= ? AND DATE(created_at) <= ?
+    `).get(monthStartStr, todayNepali);
 
-    // Get last month sales for growth calculation
-    const lastMonthStart = new Date();
-    lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
-    lastMonthStart.setDate(1);
-    const lastMonthEnd = new Date();
-    lastMonthEnd.setDate(0); // Last day of previous month
+    // Get last month sales for growth calculation (30 days before the current 30-day period)
+    const sixtyDaysAgo = new Date();
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 59);
+    const thirtyOneDaysAgo = new Date();
+    thirtyOneDaysAgo.setDate(thirtyOneDaysAgo.getDate() - 30);
     
     const lastMonthSalesResult = db.prepare(`
       SELECT COALESCE(SUM(amount), 0) as total
       FROM bill_payments
       WHERE DATE(created_at) >= ? AND DATE(created_at) <= ?
-    `).get(getNepaliDateString(lastMonthStart), getNepaliDateString(lastMonthEnd));
+    `).get(getNepaliDateString(sixtyDaysAgo), getNepaliDateString(thirtyOneDaysAgo));
 
     const growthPercent = lastMonthSalesResult.total > 0 
       ? Math.round(((monthlySalesResult.total - lastMonthSalesResult.total) / lastMonthSalesResult.total) * 100)
       : 0;
 
-    // Calculate average order value
+    // Calculate average order value (last 30 days)
     const avgOrderResult = db.prepare(`
       SELECT COALESCE(AVG(amount), 0) as avg
       FROM bill_payments
-      WHERE DATE(created_at) >= ?
-    `).get(monthStartStr);
+      WHERE DATE(created_at) >= ? AND DATE(created_at) <= ?
+    `).get(monthStartStr, todayNepali);
 
     // Get today's costs (mock - you can add actual costs table)
     const todayCosts = todaySalesResult.total * 0.6; // Assume 60% cost ratio

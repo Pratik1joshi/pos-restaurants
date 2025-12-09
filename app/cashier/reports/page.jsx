@@ -13,8 +13,11 @@ export default function ReportsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [reportPeriod, setReportPeriod] = useState('today');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  
+  // Initialize with today's date
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [startDate, setStartDate] = useState(todayStr);
+  const [endDate, setEndDate] = useState(todayStr);
   
   const [stats, setStats] = useState({
     totalSales: 0,
@@ -43,13 +46,15 @@ export default function ReportsPage() {
       setStartDate(todayStr);
       setEndDate(todayStr);
     } else if (reportPeriod === 'week') {
+      // Last 7 days including today (today = Friday, then from last Friday to this Friday)
       const weekAgo = new Date(today);
-      weekAgo.setDate(weekAgo.getDate() - 7);
+      weekAgo.setDate(weekAgo.getDate() - 6); // -6 to include today = 7 days total
       setStartDate(weekAgo.toISOString().split('T')[0]);
       setEndDate(todayStr);
     } else if (reportPeriod === 'month') {
+      // Last 30 days including today (if today is 2 March, from 2 Feb to 2 March)
       const monthAgo = new Date(today);
-      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      monthAgo.setDate(monthAgo.getDate() - 29); // -29 to include today = 30 days total
       setStartDate(monthAgo.toISOString().split('T')[0]);
       setEndDate(todayStr);
     }
@@ -59,6 +64,7 @@ export default function ReportsPage() {
     if (startDate && endDate) {
       fetchReportData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startDate, endDate]);
 
   const fetchReportData = async () => {

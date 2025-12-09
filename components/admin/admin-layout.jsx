@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   Users, Package, FileText, Settings, DollarSign, ShoppingCart,
-  LogOut, Menu, X, LayoutDashboard, Warehouse
+  LogOut, Menu, X, LayoutDashboard, Warehouse, LayoutGrid
 } from 'lucide-react';
 
 export default function AdminLayout({ children }) {
@@ -37,6 +37,7 @@ export default function AdminLayout({ children }) {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/admin/dashboard', color: 'text-gray-600' },
     { icon: Package, label: 'Menu', href: '/admin/products', color: 'text-blue-600' },
+    { icon: LayoutGrid, label: 'Tables', href: '/admin/tables', color: 'text-cyan-600' },
     { icon: Warehouse, label: 'Stock', href: '/admin/stock', color: 'text-indigo-600' },
     { icon: Users, label: 'Employees', href: '/admin/employees', color: 'text-green-600' },
     { icon: FileText, label: 'Reports', href: '/admin/reports', color: 'text-purple-600' },
