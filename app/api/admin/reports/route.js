@@ -18,9 +18,19 @@ export async function GET(request) {
       dateCondition = 'DATE(o.created_at) = ?';
       params = [today];
     } else if (period === 'week') {
-      dateCondition = 'DATE(o.created_at) >= DATE("now", "-7 days")';
+      // Last 7 days including today
+      const today = new Date();
+      const weekAgo = new Date();
+      weekAgo.setDate(today.getDate() - 6); // -6 to include today = 7 days
+      dateCondition = 'DATE(o.created_at) BETWEEN ? AND ?';
+      params = [weekAgo.toISOString().split('T')[0], today.toISOString().split('T')[0]];
     } else if (period === 'month') {
-      dateCondition = 'DATE(o.created_at) >= DATE("now", "-30 days")';
+      // Last 30 days including today
+      const today = new Date();
+      const monthAgo = new Date();
+      monthAgo.setDate(today.getDate() - 29); // -29 to include today = 30 days
+      dateCondition = 'DATE(o.created_at) BETWEEN ? AND ?';
+      params = [monthAgo.toISOString().split('T')[0], today.toISOString().split('T')[0]];
     } else if (period === 'custom' && startDate && endDate) {
       dateCondition = 'DATE(o.created_at) BETWEEN ? AND ?';
       params = [startDate, endDate];

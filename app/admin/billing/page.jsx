@@ -19,7 +19,9 @@ export default function AdminBilling() {
     esewa_qr_image: '',
     bank_qr_image: '',
     restaurant_name: '',
-    restaurant_address: ''
+    restaurant_address: '',
+    vat_number: '',
+    pan_number: ''
   });
 
   useEffect(() => {
@@ -41,7 +43,9 @@ export default function AdminBilling() {
           esewa_qr_image: data.settings.esewa_qr_image || '',
           bank_qr_image: data.settings.bank_qr_image || '',
           restaurant_name: data.settings.restaurant_name || 'Restaurant',
-          restaurant_address: data.settings.restaurant_address || ''
+          restaurant_address: data.settings.restaurant_address || '',
+          vat_number: data.settings.vat_number || '',
+          pan_number: data.settings.pan_number || ''
         });
       }
     } catch (error) {
@@ -183,7 +187,9 @@ export default function AdminBilling() {
           change: orderData.change_amount,
           date: new Date().toLocaleString('en-NP', { timeZone: 'Asia/Kathmandu' }),
           restaurant_name: settings.restaurant_name,
-          restaurant_address: settings.restaurant_address
+          restaurant_address: settings.restaurant_address,
+          vat_number: settings.vat_number,
+          pan_number: settings.pan_number
         });
         
         alert('Sale completed successfully!');
@@ -315,6 +321,8 @@ export default function AdminBilling() {
         <div class="header">
           <div class="shop-name">${billData.restaurant_name || 'RESTAURANT POS'}</div>
           ${billData.restaurant_address ? `<div style="font-size: 10px; margin-top: 3px;">${billData.restaurant_address}</div>` : ''}
+          ${billData.vat_number ? `<div style="font-size: 9px; margin-top: 2px;">VAT: ${billData.vat_number}</div>` : ''}
+          ${billData.pan_number ? `<div style="font-size: 9px;">PAN: ${billData.pan_number}</div>` : ''}
           <div style="margin-top: 5px;">Tax Invoice</div>
         </div>
 

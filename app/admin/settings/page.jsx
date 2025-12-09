@@ -15,7 +15,8 @@ export default function SettingsPage() {
     restaurant_address: 'Thamel, Kathmandu, Nepal',
     restaurant_phone: '01-4123456',
     restaurant_email: 'info@himalayan.com',
-    vat_number: '123456789',
+    vat_number: '',
+    pan_number: '',
     bank_qr_image: '',
     esewa_qr_image: '',
     currency_symbol: 'Rs'
@@ -168,14 +169,27 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">VAT Number</label>
-                <input
-                  type="text"
-                  value={settings.vat_number}
-                  onChange={(e) => setSettings({...settings, vat_number: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 text-gray-900"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">VAT Number (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="Enter VAT number"
+                    value={settings.vat_number}
+                    onChange={(e) => setSettings({...settings, vat_number: e.target.value})}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">PAN Number (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="Enter PAN number"
+                    value={settings.pan_number}
+                    onChange={(e) => setSettings({...settings, pan_number: e.target.value})}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 text-gray-900"
+                  />
+                </div>
               </div>
             </div>
           </div>

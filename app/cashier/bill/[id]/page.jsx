@@ -43,6 +43,7 @@ export default function BillDetailsPage({ params }) {
     restaurant_address: '',
     restaurant_phone: '',
     vat_number: '',
+    pan_number: '',
     bank_qr_image: '',
     esewa_qr_image: ''
   });
@@ -381,6 +382,8 @@ export default function BillDetailsPage({ params }) {
           <div class="shop-name">${settings.restaurant_name || 'RESTAURANT POS'}</div>
           ${settings.restaurant_address ? `<div style="font-size: 10px; margin-top: 3px;">${settings.restaurant_address}</div>` : ''}
           ${settings.restaurant_phone ? `<div style="font-size: 10px;">Tel: ${settings.restaurant_phone}</div>` : ''}
+          ${settings.vat_number ? `<div style="font-size: 9px; margin-top: 2px;">VAT: ${settings.vat_number}</div>` : ''}
+          ${settings.pan_number ? `<div style="font-size: 9px;">PAN: ${settings.pan_number}</div>` : ''}
           <div style="margin-top: 5px;">Tax Invoice</div>
         </div>
 
@@ -466,6 +469,7 @@ export default function BillDetailsPage({ params }) {
           <div>Thank you for your visit!</div>
           <div>Please come again</div>
           ${settings.vat_number ? `<div style="margin-top: 5px;">VAT No: ${settings.vat_number}</div>` : ''}
+          ${settings.pan_number ? `<div>PAN No: ${settings.pan_number}</div>` : ''}
         </div>
 
         <script>
@@ -665,6 +669,7 @@ export default function BillDetailsPage({ params }) {
               <p className="text-lg font-semibold text-black">Thank you for dining with us!</p>
               <p className="text-black mt-2">Please visit again</p>
               {settings.vat_number && <p className="text-sm text-black mt-4">VAT No: {settings.vat_number}</p>}
+              {settings.pan_number && <p className="text-sm text-black">PAN No: {settings.pan_number}</p>}
             </div>
           </div>
         </div>
@@ -825,14 +830,14 @@ export default function BillDetailsPage({ params }) {
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none text-gray-900 font-semibold"
                 >
                   <option value="cash">Cash</option>
-                  <option value="online">Online (QR/UPI)</option>
+                  <option value="qr">QR Payment (eSewa/Bank)</option>
                   <option value="card">Card</option>
                   <option value="credit">Credit (Customer Account)</option>
                 </select>
               </div>
 
-              {/* Online Payment QR Codes */}
-              {paymentMethod === 'online' && (
+              {/* QR Payment Options */}
+              {paymentMethod === 'qr' && (
                 <div className="mb-6 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
                   <h3 className="font-semibold text-gray-900 mb-4 text-center">Scan to Pay</h3>
                   <div className="grid grid-cols-2 gap-4">
